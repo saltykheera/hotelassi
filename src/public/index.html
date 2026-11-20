@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotels — Search & Orchestrate Best Offers</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Airbnb Header -->
+  <header class="airbnb-nav">
+    <div class="nav-wrapper">
+      <!-- Brand Logo -->
+      <a href="/" class="brand-link">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M16 1C11.5 1 7.8 4.2 6.5 8.5C5.2 12.8 6.5 17.5 9.8 20.6L16 26.5L22.2 20.6C25.5 17.5 26.8 12.8 25.5 8.5C24.2 4.2 20.5 1 16 1Z" fill="#FF385C" />
+          <circle cx="16" cy="11" r="3.5" fill="white" />
+        </svg>
+        <span class="brand-title">hotelassi</span>
+      </a>
+
+      <!-- Right Actions -->
+      <div class="header-right">
+        <a href="/api-docs" target="_blank" class="nav-button-text">Swagger API</a>
+        <div id="health-pill" class="health-pill loading" title="Real-time system health">
+          <span class="health-dot"></span>
+          <span id="health-text">Checking</span>
+        </div>
+        <div class="user-profile-menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+          <div class="avatar-circle">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#717171">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Expanded Floating Search Bar (Airbnb Full Pill) -->
+  <section class="search-panel">
+    <div class="container">
+      <form id="airbnb-search-form" class="floating-search-bar">
+        <!-- Destination -->
+        <div class="search-block">
+          <label for="city-input">Where</label>
+          <input type="text" id="city-input" value="delhi" placeholder="Search destinations" required />
+        </div>
+        <div class="bar-divider"></div>
+
+        <!-- Min Price -->
+        <div class="search-block">
+          <label for="min-price">Min Price</label>
+          <input type="number" id="min-price" placeholder="Add minimum" min="0" step="100" />
+        </div>
+        <div class="bar-divider"></div>
+
+        <!-- Max Price -->
+        <div class="search-block">
+          <label for="max-price">Max Price</label>
+          <input type="number" id="max-price" placeholder="Add maximum" min="0" step="100" />
+        </div>
+
+        <!-- Submit Button: Rausch Orb -->
+        <button type="submit" class="rausch-search-orb" id="search-submit-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="search-text">Search</span>
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Categories Strip -->
+  <section class="categories-bar">
+    <div class="container categories-container">
+      <button class="category-item active" data-city="delhi">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 21h18M3 7v14M21 7v14M6 11h2M6 15h2M10 11h2M10 15h2M14 11h2M14 15h2M18 11h2M18 15h2M9 3h6v4H9z" />
+        </svg>
+        <span>Delhi</span>
+      </button>
+      <button class="category-item" data-city="mumbai">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+        <span>Mumbai</span>
+      </button>
+      <button class="category-item" data-city="bangalore">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </svg>
+        <span>Bangalore</span>
+      </button>
+      <button class="category-item" data-city="goa">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M2 12h20M12 2v20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93" />
+        </svg>
+        <span>Beachfront</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Main Content: Airbnb Hotel Listings Vertical List -->
+  <main class="container listing-section">
+    <div class="listing-header">
+      <div class="results-stats">
+        <h2 id="destination-heading">Hotels in Delhi</h2>
+        <p id="results-count-text">Finding best deduplicated prices across suppliers...</p>
+      </div>
+    </div>
+
+    <!-- Hotel Cards Vertical List (Airbnb Style) -->
+    <div id="airbnb-list" class="airbnb-list">
+      <!-- Populated via app.js -->
+    </div>
+  </main>
+
+  <!-- Airbnb Footer -->
+  <footer class="airbnb-footer">
+    <div class="container footer-content">
+      <div class="footer-left">
+        <span>© 2026 Hotel Offer Orchestrator</span>
+        <span>·</span>
+        <a href="/api-docs">OpenAPI Documentation</a>
+        <span>·</span>
+        <a href="/health">System Status</a>
+      </div>
+      <div class="footer-right">
+        <span>🌐 English (IN)</span>
+        <span>₹ INR</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

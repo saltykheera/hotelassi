@@ -1,0 +1,232 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Hotel Offer Orchestrator API",
+    "version": "1.0.0",
+    "description": "Production-grade hotel offer aggregator and orchestrator. Uses Temporal for parallel supplier fetching and deterministic deduplication, and Redis for native in-memory price range filtering."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local / Docker Environment"
+    }
+  ],
+  "paths": {
+    "/api/hotels": {
+      "get": {
+        "summary": "Retrieve deduplicated hotel offers with optional price range filtering",
+        "description": "Orchestrates calls to Supplier A and Supplier B, deduplicates by hotel name selecting the cheapest offer, persists to Redis, and executes price range filtering.",
+        "parameters": [
+          {
+            "name": "city",
+            "in": "query",
+            "required": true,
+            "description": "Target city name (e.g., delhi, mumbai)",
+            "schema": {
+              "type": "string",
+              "example": "delhi"
+            }
+          },
+          {
+            "name": "minPrice",
+            "in": "query",
+            "required": false,
+            "description": "Minimum hotel price filter (applied inside Redis)",
+            "schema": {
+              "type": "number",
+              "example": 5400
+            }
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "required": false,
+            "description": "Maximum hotel price filter (applied inside Redis)",
+            "schema": {
+              "type": "number",
+              "example": 6000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved deduplicated hotel offers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HotelOffer"
+                  }
+                },
+                "example": [
+                  {
+                    "name": "Holtin",
+                    "price": 5340,
+                    "supplier": "Supplier B",
+                    "commissionPct": 20
+                  },
+                  {
+                    "name": "Radison",
+                    "price": 5900,
+                    "supplier": "Supplier A",
+                    "commissionPct": 13
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - invalid query parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "System and dependency health check (Bonus Requirement)",
+        "description": "Performs concurrent connectivity checks and reports latencies for Supplier A, Supplier B, Redis, and Temporal.",
+        "responses": {
+          "200": {
+            "description": "System is healthy or running with degraded optional services",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Critical dependencies are down"
+          }
+        }
+      }
+    },
+    "/supplierA/hotels": {
+      "get": {
+        "summary": "Mock Supplier A hotel endpoint",
+        "parameters": [
+          {
+            "name": "city",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "delhi"
+            }
+          },
+          {
+            "name": "simulateError",
+            "in": "query",
+            "description": "Simulates supplier failure for resilience testing",
+            "schema": {
+              "type": "boolean",
+              "example": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of raw hotel offers from Supplier A"
+          }
+        }
+      }
+    },
+    "/supplierB/hotels": {
+      "get": {
+        "summary": "Mock Supplier B hotel endpoint",
+        "parameters": [
+          {
+            "name": "city",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "delhi"
+            }
+          },
+          {
+            "name": "simulateError",
+            "in": "query",
+            "description": "Simulates supplier failure for resilience testing",
+            "schema": {
+              "type": "boolean",
+              "example": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of raw hotel offers from Supplier B"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HotelOffer": {
+        "type": "object",
+        "required": ["name", "price", "supplier", "commissionPct"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Holtin"
+          },
+          "price": {
+            "type": "number",
+            "example": 5340
+          },
+          "supplier": {
+            "type": "string",
+            "example": "Supplier B"
+          },
+          "commissionPct": {
+            "type": "number",
+            "example": 20
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "example": "Bad Request" },
+          "message": { "type": "string", "example": "Invalid query parameters" },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": { "type": "string" },
+                "message": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "UP" },
+          "timestamp": { "type": "string", "example": "2026-11-20T21:00:00.000Z" },
+          "dependencies": {
+            "type": "object",
+            "properties": {
+              "supplierA": { "type": "object" },
+              "supplierB": { "type": "object" },
+              "redis": { "type": "object" },
+              "temporal": { "type": "object" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
