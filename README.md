@@ -6,6 +6,18 @@ The system calls two upstream mock supplier APIs in parallel, deduplicates hotel
 
 ---
 
+## 🌐 Live Production Deployment
+
+| Resource | Live Production URL | Status |
+| :--- | :--- | :--- |
+| **Airbnb-Style Web UI** | [https://hotelassi.vercel.app](https://hotelassi.vercel.app) | `200 OK` |
+| **Interactive Swagger API Docs** | [https://hotelassi.vercel.app/api-docs](https://hotelassi.vercel.app/api-docs) | `200 OK` |
+| **Deduplicated Offers API** | [https://hotelassi.vercel.app/api/hotels?city=delhi](https://hotelassi.vercel.app/api/hotels?city=delhi) | `200 OK` |
+| **In-Memory Price Range Filter** | [https://hotelassi.vercel.app/api/hotels?city=delhi&minPrice=5400&maxPrice=6000](https://hotelassi.vercel.app/api/hotels?city=delhi&minPrice=5400&maxPrice=6000) | `200 OK` |
+| **Multi-Dependency Health Check** | [https://hotelassi.vercel.app/health](https://hotelassi.vercel.app/health) | `200 OK` |
+
+---
+
 ## Tech Stack
 
 - **Language & Runtime**: Node.js 22 LTS, TypeScript (Strict ES2022 / NodeNext)
