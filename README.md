@@ -19,6 +19,8 @@ The system calls two upstream mock supplier APIs in parallel, deduplicates hotel
 
 ## Architecture & SOLID / MVC Design
 
+![System Architecture](./architecture.svg)
+
 ```
 Client (Browser / Postman)
       │
@@ -46,6 +48,19 @@ Redis 7 (:6379)
 - **Open/Closed (OCP) & Liskov Substitution (LSP)**: Supplier clients adhere to a unified interface (`IHotelSupplierClient`), allowing new suppliers to be plugged in without modifying core deduplication logic.
 - **Redis In-Storage Price Filtering**: Executes `ZRANGEBYSCORE hotels:zset:{city} minPrice maxPrice` directly in Redis ($O(\log N + M)$), followed by `HMGET` for instant payload hydration.
 - **Supplier Resilience**: If one supplier is down after retries, the workflow gracefully falls back to the healthy supplier's inventory.
+
+---
+
+## Container Architecture (How Many Containers & What They Do)
+
+The application stack is orchestrated using **4 Docker containers**:
+
+| # | Container Name | Service | Image / Build | Port(s) | Role & Description |
+|---|---|---|---|---|---|
+| **1** | `hotel-orchestrator-api` | `api` | Built from `Dockerfile` (`node:22-slim`) | `3000:3000` | **Express API Gateway & Web UI**: Serves `/api/hotels`, `/health`, interactive Swagger docs (`/api-docs`), and triggers Temporal workflows. |
+| **2** | `hotel-orchestrator-worker` | `worker` | Built from `Dockerfile` (`node:22-slim`) | *Internal* | **Temporal Background Worker**: Subscribes to `HOTEL_OFFER_TASK_QUEUE`, calls suppliers in parallel, runs deduplication logic, and persists to Redis. |
+| **3** | `hotel-orchestrator-redis` | `redis` | `redis:7-alpine` | `6379:6379` | **In-Memory Cache & Price Filter**: Stores hotel offers in Hashes and Sorted Sets (`ZSET`) to execute native in-storage price range filtering (`ZRANGEBYSCORE`). |
+| **4** | `hotel-orchestrator-temporal` | `temporal` | `temporalio/temporal:latest` | `7233:7233`<br>`8233:8233` | **Temporal All-in-One Engine & Web UI**: Coordinates distributed workflows, retries, and includes the integrated Temporal Web Dashboard on port `8233`. |
 
 ---
 
